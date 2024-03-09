@@ -1,34 +1,46 @@
 import { Logger } from '@nestjs/common';
 import {
-  MessageBody,
+  WebSocketGateway,
+  SubscribeMessage,
+  WsResponse,
+  OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  SubscribeMessage,
-  WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 
-@WebSocketGateway(8080, { cors: '*', namespace: 'user' })
-export class EventsGateway implements OnGatewayDisconnect, OnGatewayConnection {
+@WebSocketGateway({ namespace: 'socket', cors: true })
+export class EventsGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
   logger = new Logger();
 
-  async handleConnection(client: Socket): Promise<void> {
-    const socketId = client.id;
-    this.addClient(socketId);
+  afterInit(server: Server) {
+    this.server = server;
   }
 
-  @SubscribeMessage('send_message')
-  listenForMessages(@MessageBody() message: string) {
-    this.server.sockets.emit('receive_message', message);
+  handleConnection(client: Socket) {
+    this.logger.log(`Client connected: ${client.id}`);
   }
 
-  addClient(socketId: string) {
-    throw new Error('Method not implemented.');
+  handleDisconnect(client: Socket) {
+    this.logger.log(`Client disconnected: ${client.id}`);
   }
-  handleDisconnect(client: any) {
-    throw new Error('Method not implemented.');
+
+  @SubscribeMessage('message')
+  handleMessage(client: Socket, message: string): WsResponse<string> {
+    const username = 'User'; // Replace with user authentication logic
+    const timestamp = new Date().toLocaleTimeString();
+
+    const response: WsResponse<string> = {
+      event: 'message',
+      data: `${timestamp} - ${username}: ${message}`,
+    };
+
+    this.server.emit('message', response.data); // Broadcast the message to all clients
+    return response;
   }
 }
