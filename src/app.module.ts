@@ -1,14 +1,19 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { EventsModule } from './events/events.module';
-
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { AuthModule } from './auth/auth.module';
+import { AuthController } from './auth/auth.controller';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [EventsModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    EventsModule,
+    AuthModule,
+  ],
+  controllers: [AuthController],
+  providers: [],
 })
 export class AppModule {}
