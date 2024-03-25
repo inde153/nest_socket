@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
@@ -12,6 +13,11 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req, @Res() res) {
-    return res.redirect(process.env.FRONT_URL);
+    const token = this.authService.login(req.user.profile);
+    return res
+      .cookie('access_token', `${token['accessToken']}`, {
+        httpOnly: true,
+      })
+      .redirect(`${process.env.FRONT_URL}/chat`);
   }
 }

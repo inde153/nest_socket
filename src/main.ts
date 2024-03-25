@@ -13,6 +13,7 @@ async function bootstrap() {
     methods: '*', // 허용할 메서드
     allowedHeaders: 'Content-Type, Authorization', // 허용할 헤더
     credentials: true, // 쿠키 및 인증 헤더 허용 여부
+    maxAge: 81600,
   };
 
   app.enableCors(corsOptions);
