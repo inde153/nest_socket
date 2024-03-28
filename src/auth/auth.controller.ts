@@ -15,9 +15,23 @@ export class AuthController {
   async googleAuthCallback(@Req() req, @Res() res) {
     const token = this.authService.login(req.user.profile);
     return res
-      .cookie('access_token', `${token['accessToken']}`, {
+      .cookie('access', `${token['accessToken']}`, {
         httpOnly: true,
       })
-      .redirect(`${process.env.FRONT_URL}/chat`);
+      .cookie('refresh', `${token['refreshToken']}`, {
+        httpOnly: true,
+      })
+      .redirect(`${process.env.FRONT_URL}`);
+  }
+
+  @Post('refresh')
+  @UseGuards(AuthGuard('refresh'))
+  async getAccessToken(@Req() req, @Res() res): Promise<boolean> {
+    const token = this.authService.createAccessToken({ id: req.user.id });
+    return res
+      .cookie('access', token, {
+        httpOnly: true,
+      })
+      .json('ok');
   }
 }

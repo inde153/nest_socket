@@ -9,14 +9,19 @@ export class AuthService {
   login(user: object): object {
     const payload: Payload = { id: user['id'] };
     const accessToken: string = this.createAccessToken(payload)!;
+    const refreshToken: string = this.createRefreshToken(payload)!;
 
-    return { accessToken: accessToken };
-    // const refreshToken: string = this.createRefreshToken(payload)!;
+    return { accessToken, refreshToken };
   }
 
-  private createAccessToken(payload: Payload): string {
+  createAccessToken(payload: Payload): string {
     return this.jwtService.sign(payload);
   }
 
-  private createRefreshToken() {}
+  private createRefreshToken(payload: Payload): string {
+    return this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET_REFRESH_KEY,
+      expiresIn: process.env.JWT_SECRET_REFRESH_EXPIRATION,
+    });
+  }
 }
