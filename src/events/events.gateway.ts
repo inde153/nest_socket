@@ -31,13 +31,13 @@ export class EventsGateway
   }
 
   @SubscribeMessage('message')
-  handleMessage(client: Socket, message: string): WsResponse<string> {
+  handleEvent(client: Socket, data: string): WsResponse<string> {
     const username = 'User'; // Replace with user authentication logic
     const timestamp = new Date().toLocaleTimeString();
 
     const response: WsResponse<string> = {
       event: 'message',
-      data: `${timestamp} - ${username}: ${message}`,
+      data: `${timestamp} - ${username}: ${data}`,
     };
 
     this.server.emit('message', response.data); // Broadcast the message to all clients
